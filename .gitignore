@@ -1,6 +1,6 @@
 # Images
-.png
-.fig
+*.png
+*.fig
 
 # Mac-specific
-.DS_Store
+*.DS_Store
