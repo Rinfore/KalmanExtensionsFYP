@@ -2,5 +2,9 @@
 *.png
 *.fig
 
+# Matlab-specific
+*.mat
+zzz*
+
 # Mac-specific
 *.DS_Store

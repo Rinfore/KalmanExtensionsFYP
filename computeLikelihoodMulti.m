@@ -1,4 +1,4 @@
-function modelLikelihood = computeLikelihoodMBRM(H, x, P, R, y)
+function modelLikelihood = computeLikelihoodMulti(H, x, P, R, y)
 
 % description -
 %   returns the likelihood of the model given the measurement received,

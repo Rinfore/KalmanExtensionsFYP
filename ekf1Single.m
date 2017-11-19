@@ -1,4 +1,4 @@
-function [xs, Ps] = ekf1MBR(x0,P0,Q,R,ys,ntimesteps,del)
+function [xs, Ps] = ekf1Single(x0,P0,H,Q,R,ys,ntimesteps,del,probtype)
 
 % description - 
   % performs state estimation for entire ntimesteps for the MBR problem given a model of the 
@@ -10,12 +10,15 @@ function [xs, Ps] = ekf1MBR(x0,P0,Q,R,ys,ntimesteps,del)
   
   % @param x0: n x 1 vector: initial state estimate
   % @param P0: n x n matrix: covariance matrix
+  % @param H: j x n matrix: output matrix
   % @param Q: n x n matrix: process noise covariance matrix
   % @param R: j x j matrix: measurement noise covariance matrix
   
   % @param ys: m x ntimesteps matrix: measurement vectors comprise the columns of this matrix
   % @param ntimesteps: scalar
   % @param del: scalar: delay between measurement readings.
+  
+  % @param probtype: string: supports MBR, CSTR, and Bioreactor problem
   
 % output
   % @return xs: n x ntimesteps matrix:  matrix containing diagonal of the a
@@ -34,10 +37,10 @@ function [xs, Ps] = ekf1MBR(x0,P0,Q,R,ys,ntimesteps,del)
   for i = 1:ntimesteps
     
     time = ceil(i*del);
-    [x, P] = ekf2TimeUpdateMBR(x,P,Q,del,time);
+    [x, P] = ekf2TimeUpdateSingle(x,P,Q,del,time,probtype);
     %x = real(x);
     %P = real(P);
-    [x, P] = ekf3MeasurUpdateMBR(x,P,R*del,ys(:,i));
+    [x, P] = ekf3MeasurUpdate(x,P,R*del,ys(:,i),H);
     %x = real(x);
     %P = real(P);
     xs(:,i) = x;

@@ -1,4 +1,4 @@
-function [xs, Ps, posterior, xmodslong, pmodslong, posteriorslong] = ekf1MBRM(prior,x0,P0,H,Q,R,ys,ntimesteps,del)
+function [xs, Ps, posterior, xmodslong, pmodslong, posteriorslong] = ekf1Multi(prior,x0,P0,H,Q,R,ys,ntimesteps,del, probtype, convthreshold)
 
 % description - 
   % performs state estimation for entire ntimesteps for the MBR problem given a model of the 
@@ -20,6 +20,8 @@ function [xs, Ps, posterior, xmodslong, pmodslong, posteriorslong] = ekf1MBRM(pr
   % @param ys: m x ntimesteps matrix: measurement vectors comprise the columns of this matrix
   % @param ntimesteps: scalar
   % @param del: scalar: delay between measurement readings.
+  
+  % @param probtype: string: supports MBR, CSTR, and Bioreactor problem
   
 % output
   % @return xs: n x ntimesteps matrix:  matrix containing diagonal of the a
@@ -51,15 +53,15 @@ function [xs, Ps, posterior, xmodslong, pmodslong, posteriorslong] = ekf1MBRM(pr
          time = ceil(i*del);
          x = xmods(:,md);
          P = Pmods(:,:,md);
-         [x, P] = ekf2TimeUpdateMBRM(md,x,P,Q,del,time); %need to tell which model to follow
+         [x, P] = ekf2TimeUpdateMulti(md,x,P,Q,del,time,probtype); %need to tell which model to follow
          %x = real(x);
          %P = real(P);
          
          if converged == 0
-            Ls(md) = computeLikelihoodMBRM(H, x, P, del*R, ys(:,i)); %Ls(md) = computeLikelihoodMBRM(H, x, P_est, del*R, ys(:,i));
+            Ls(md) = computeLikelihoodMulti(H, x, P, del*R, ys(:,i)); %Ls(md) = computeLikelihoodMBRM(H, x, P_est, del*R, ys(:,i));
          end
 
-         [x, P, ~] = ekf3MeasurUpdateMBRM(x,P,del*R,ys(:,i));
+         [x, P] = ekf3MeasurUpdate(x,P,del*R,ys(:,i),H);
          %x = real(x);
          %P = real(P);
          
@@ -98,7 +100,7 @@ function [xs, Ps, posterior, xmodslong, pmodslong, posteriorslong] = ekf1MBRM(pr
 
      if sum(posterior == 0) == m-1 %% if only one model has P = 1, then it's converged.
          converged = 1;
-     elseif sum(posterior >= 0.995) == 1
+     elseif sum(posterior >= convthreshold) == 1
          converged = 1;
          Ls = prevLs;
      end

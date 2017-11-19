@@ -1,12 +1,12 @@
 % description - 
-  % performs MBR simulation for entire ntimesteps of the problem. Please
+  % performs MBR (or other) simulation for entire ntimesteps of the problem. Please
   % refer to the report for the notation used. e.g. n, j, m, P, R, Q, x, y
   % Allows the calling of mainMBR for the single-model EKF estimation and 
   % mainMBRM for multiple-model EKF estimation.
   % These scripts will return a graph of all estimated parameters in red
   % and real states in blue. rsmeEKF holds the RMSE for each state.
 
-addpath('/Users/Daniel/Documents/MATLAB/KalmanFYP/draft')
+%addpath('/Users/Daniel/Documents/MATLAB/KalmanFYP/draft')
 
 clear
 tic

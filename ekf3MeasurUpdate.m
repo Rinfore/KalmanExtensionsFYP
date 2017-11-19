@@ -1,5 +1,5 @@
-function [xnewM, PnewM, K]=ekf3MeasurUpdateMBRM(xnew,Pnew,R,y)
-
+function [xnewM, PnewM]=ekf3MeasurUpdate(xnew,Pnew,R,y,H)
+    
 % description - 
   % does a single measurement update from at time k for the MBR problem 
   % given a model of the system (in the form of a matrix/matrices F, H, 
@@ -21,19 +21,15 @@ function [xnewM, PnewM, K]=ekf3MeasurUpdateMBRM(xnew,Pnew,R,y)
   x = xnew;
   P = Pnew;
   n = size(x,1);
-  
-  H = [eye(4), zeros(4,1)];
-  
-  %M = eye(size(y,1));
       
   resid = y - H*x;
-  
-  K = (P*H')/(H*P*H'+R);
-  x = x + K*resid;
-  P = (eye(n)-K*H)*P*(eye(n)-K*H)'+K*R*K'; % Joseph stabilized version (guarantees positive semidefiniteness)
-  
+  if ~((sum(sum(isnan(P)))+sum(sum(isinf(P)))) > 0) %ensures no nan and inf in the matrix.
+      K = (P*H')/(H*P*H'+R);
+      x = x + K*resid;
+      P = (eye(n)-K*H)*P*(eye(n)-K*H)'+K*R*K'; % Joseph stabilized version (guarantees positive semidefiniteness)
+  end
   %regularization!!!
-  %P = (1-1e-4)*P + 1e-4*eye(size(P));
+  %P = (1-1e-4)*P + 1e-4*eye(size(P));%!!!!
   
   xnewM = x;
   PnewM = P;

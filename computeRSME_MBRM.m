@@ -1,4 +1,4 @@
-function rsme = computeRSMEMulti(estStates,simulStates,estStatesmods)
+function rsme = computeRSME_MBRM(estStates,simulStates,estStatesmods)
 %rsme is a vector of size n
 n = size(estStates,1);
 ntimesteps = size(estStates,2);
