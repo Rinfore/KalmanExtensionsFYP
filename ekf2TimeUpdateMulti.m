@@ -18,6 +18,8 @@ function [xnew, Pnew] = ekf2TimeUpdateMulti(md,xold,Pold,Q,del,time,probtype)
   % @param del: scalar: delay between measurement readings.
   % @param time: scalar: time in seconds of time k, used in determining the
   % control action through array alphat in loadParamDataMBR
+  % @param md: scalar: mainly for Bioreactor problem - index of model being
+  % used
 
 % output
   % @return xnew: n x 1 vector: a priori state estimate
@@ -71,6 +73,16 @@ function [xnew, Pnew] = ekf2TimeUpdateMulti(md,xold,Pold,Q,del,time,probtype)
           solP = ode45(@(t,P) CSTRsimulCovfun(t,P,Q,f3_estimate,solx),[0,del],P_col); %n_estimate=xold(6)
           P = reshape(deval(solP,del),n,n);
       case 'Bioreactor'
+          % numerical integration for one sampling period
+          d_est = 0.2;
+          cf_est = 35;
+          
+          solx = ode45(@(t,x) Bioreactorsimulfun(t,x,d_est,cf_est,md),[0,del],x);
+          x = deval(solx,del);
+
+          P_col = P(:);
+          solP = ode45(@(t,P) BioreactorsimulCovfun(t,P,Q,d_est,cf_est,solx,md),[0,del],P_col,odeset('RelTol',1e-2,'AbsTol',1e-4)); %n_estimate=xold(6)
+          P = reshape(deval(solP,del),n,n);
       otherwise
           warning('invalid probtype')
   end

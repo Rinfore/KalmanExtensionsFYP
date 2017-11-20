@@ -1,4 +1,4 @@
-function [xs, Ps] = ekf1Single(x0,P0,H,Q,R,ys,ntimesteps,del,probtype)
+function [xs, Ps] = ekf1Single(x0,P0,H,Q,R,ys,ntimesteps,del,probtype,md)
 
 % description - 
   % performs state estimation for entire ntimesteps for the MBR problem given a model of the 
@@ -37,7 +37,7 @@ function [xs, Ps] = ekf1Single(x0,P0,H,Q,R,ys,ntimesteps,del,probtype)
   for i = 1:ntimesteps
     
     time = ceil(i*del);
-    [x, P] = ekf2TimeUpdateSingle(x,P,Q,del,time,probtype);
+    [x, P] = ekf2TimeUpdateSingle(x,P,Q,del,time,probtype,md);
     %x = real(x);
     %P = real(P);
     [x, P] = ekf3MeasurUpdate(x,P,R*del,ys(:,i),H);

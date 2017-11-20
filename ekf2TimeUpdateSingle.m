@@ -1,4 +1,4 @@
-function [xnew, Pnew] = ekf2TimeUpdateSingle(xold,Pold,Q,del,time,probtype)
+function [xnew, Pnew] = ekf2TimeUpdateSingle(xold,Pold,Q,del,time,probtype,md)
     
 % description - 
   % does a single time update from time k-1 to time k for the MBR problem 
@@ -18,6 +18,8 @@ function [xnew, Pnew] = ekf2TimeUpdateSingle(xold,Pold,Q,del,time,probtype)
   % control action through array alphat in loadParamDataMBR
   
   % @param probtype: string: supports MBR, CSTR, and Bioreactor problem
+  % @param md: scalar: mainly for Bioreactor problem - index of model being
+  % used
 
 % output
   % @return xnew: n x 1 vector: a priori state estimate
@@ -50,7 +52,18 @@ function [xnew, Pnew] = ekf2TimeUpdateSingle(xold,Pold,Q,del,time,probtype)
         solP = ode45(@(t,P) CSTRsimulCovfun(t,P,f3_estimate,Q,solx),[0,del],P_col); %n_estimate=xold(6)
         P = reshape(deval(solP,del),n,n);
       case 'Bioreactor'
-      
+        % numerical integration for one sampling period
+        d_est = 0.2;
+        cf_est = 35;
+        %md = 4; %%manual override
+        
+        solx = ode45(@(t,x) Bioreactorsimulfun(t,x,d_est,cf_est,md),[0,del],x);
+        x = deval(solx,del);
+
+        P_col = P(:);
+        solP = ode45(@(t,P) BioreactorsimulCovfun(t,P,Q,d_est,cf_est,solx,md),[0,del],P_col,odeset('RelTol',1e-2,'AbsTol',1e-4)); %n_estimate=xold(6)
+        P = reshape(deval(solP,del),n,n);
+        
       otherwise
           warning('invalid probtype')
   end

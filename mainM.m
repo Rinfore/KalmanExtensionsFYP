@@ -6,7 +6,7 @@
   % These scripts will return a graph of all estimated parameters in red
   % and real states in blue. rsmeEKF holds the RMSE for each state.
 
-%addpath('/Users/Daniel/Documents/MATLAB/KalmanFYP/draft')
+addpath('./mbr')
 
 clear
 tic

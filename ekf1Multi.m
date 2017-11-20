@@ -11,7 +11,8 @@ function [xs, Ps, posterior, xmodslong, pmodslong, posteriorslong] = ekf1Multi(p
 
 % input
   % @param prior: m x 1 vector: vector of probabilities of each model
-  % @param x0: n x 1 vector: initial state estimate
+  % @param x0: n x 1 vector: initial state estimate or
+  %          : n x m vector: vector of initial states for each model
   % @param P0: n x n matrix: covariance matrix
   % @param H: j x n matrix: output matrix
   % @param Q: n x n matrix: process noise covariance matrix
@@ -36,7 +37,13 @@ function [xs, Ps, posterior, xmodslong, pmodslong, posteriorslong] = ekf1Multi(p
   xs = zeros(n,ntimesteps);
   Ps = zeros(n,ntimesteps);
   
-  xmods = repmat(x0,[1,m]);
+  ignoredIndices = zeros(4,1);
+  
+  if size(x0,2) == m
+      xmods = x0;
+  else
+      xmods = repmat(x0,[1,m]);
+  end
   Pmods = repmat(P0,[1,1,m]);
   Ls = zeros(m,1); %%column vector!!
   xmodslong = zeros(n,m,ntimesteps);
@@ -50,20 +57,37 @@ function [xs, Ps, posterior, xmodslong, pmodslong, posteriorslong] = ekf1Multi(p
       P_est = reshape(reshape(permute(Pmods,[3 1 2]),m,[]).'*prior,n,[]); % just averaging P's for various models by the probabilities contained in prior
       
       for md = 1:m
-         time = ceil(i*del);
-         x = xmods(:,md);
-         P = Pmods(:,:,md);
-         [x, P] = ekf2TimeUpdateMulti(md,x,P,Q,del,time,probtype); %need to tell which model to follow
-         %x = real(x);
-         %P = real(P);
-         
-         if converged == 0
-            Ls(md) = computeLikelihoodMulti(H, x, P, del*R, ys(:,i)); %Ls(md) = computeLikelihoodMBRM(H, x, P_est, del*R, ys(:,i));
+         if ~ignoredIndices(md)
+             time = ceil(i*del);
+             x = xmods(:,md);
+             P = Pmods(:,:,md);
+             try 
+                [x, P] = ekf2TimeUpdateMulti(md,x,P,Q,del,time,probtype); %need to tell which model to follow
+                %x = real(x);
+                %P = real(P);
+                if converged == 0
+                    Ls(md) = computeLikelihoodMulti(H, x, P, del*R, ys(:,i)); %Ls(md) = computeLikelihoodMBRM(H, x, P_est, del*R, ys(:,i));
+                end
+                
+                [x, P] = ekf3MeasurUpdate(x,P,del*R,ys(:,i),H);
+                %x = real(x);
+                %P = real(P);
+             catch ME
+                 disp(ME)
+                 if strcmp(ME.identifier, 'MATLAB:deval:SolOutsideInterval')
+                    ignoredIndices(md) = true;
+                    Ls(md) = 0;
+                    x = zeros(n,1);%or NaN?
+                    P = zeros(n,n);%or NaN?
+                 else
+                    throw(ME);
+                 end
+             end
+         else
+             Ls(md) = 0;
+             x = zeros(n,1);%or NaN?
+             P = zeros(n,n);%or NaN?
          end
-
-         [x, P] = ekf3MeasurUpdate(x,P,del*R,ys(:,i),H);
-         %x = real(x);
-         %P = real(P);
          
          xmods(:,md) = x;
          Pmods(:,:,md) = P;
@@ -77,6 +101,7 @@ function [xs, Ps, posterior, xmodslong, pmodslong, posteriorslong] = ekf1Multi(p
        for md = 1:m
            if (sum(isnan(xmods(:,md)))+sum(isinf(xmods(:,md)))) > 0
                Ls(md) = 0;
+               ignoredIndices(md) = true;
            end
        end
       
@@ -98,15 +123,19 @@ function [xs, Ps, posterior, xmodslong, pmodslong, posteriorslong] = ekf1Multi(p
       Ps(:,i) = diag(P_est);
       posteriorslong(:,i) = posterior;
 
-     if sum(posterior == 0) == m-1 %% if only one model has P = 1, then it's converged.
-         converged = 1;
-     elseif sum(posterior >= convthreshold) == 1
-         converged = 1;
-         Ls = prevLs;
+     if converged == 0
+         if sum(posterior == 0) == m-1 %% if only one model has P = 1, then it's converged.
+             converged = 1;
+             ignoredIndices = (posterior == 0);
+         elseif sum(posterior >= convthreshold) == 1
+             converged = 1;
+             ignoredIndices = ~(posterior >= convthreshold);
+             Ls = prevLs;
+         end
      end
-      prior = posterior;
+     prior = posterior;
       
-      %delete low-probability models?
+     %delete low-probability models?
   end
   
 end
