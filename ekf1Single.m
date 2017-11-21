@@ -1,4 +1,4 @@
-function [xs, Ps] = ekf1Single(x0,P0,H,Q,R,ys,ntimesteps,del,probtype,md,alph,ERCfactor)
+function [xs, Ps] = ekf1Single(x0,P0,H,Q,R,ys,ntimesteps,del,probtype,md,alph,ERCfactor,robustflaglmd)
 
 % description - 
   % performs state estimation for entire ntimesteps for the specified problem given a model of the 
@@ -47,7 +47,7 @@ function [xs, Ps] = ekf1Single(x0,P0,H,Q,R,ys,ntimesteps,del,probtype,md,alph,ER
         if mod(i-1,ERCfactor) ~= 0 %%so first data point has a reading
             [x, er] = ekf4CompensMBR(x,er,alph,del,time,H);%%F? resid?
         else
-            [x, P, resid, K] = ekf3MeasurUpdate(x,P,R*del,ys(:,i),H);
+            [x, P, resid, K] = ekf3MeasurUpdate(x,P,R*del,ys(:,i),H,robustflaglmd);
             warning('off','MATLAB:singularMatrix')
             Htransform = (H'*H)\H';
             warning('on','MATLAB:singularMatrix')
@@ -55,7 +55,7 @@ function [xs, Ps] = ekf1Single(x0,P0,H,Q,R,ys,ntimesteps,del,probtype,md,alph,ER
             er = (Htransform - K)*resid; %%not sure if this works for other cases
         end
     else
-        [x, P, ~, ~] = ekf3MeasurUpdate(x,P,R*del,ys(:,i),H);
+        [x, P, ~, ~] = ekf3MeasurUpdate(x,P,R*del,ys(:,i),H,robustflaglmd);
     end
     %x = real(x);
     %P = real(P);

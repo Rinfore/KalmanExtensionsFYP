@@ -1,4 +1,4 @@
-function [xs, Ps, posterior, xmodslong, pmodslong, posteriorslong] = ekf1Multi(prior,x0,P0,H,Q,R,ys,ntimesteps,del, probtype, convthreshold, alph, ERCfactor)
+function [xs, Ps, posterior, xmodslong, pmodslong, posteriorslong] = ekf1Multi(prior,x0,P0,H,Q,R,ys,ntimesteps,del, probtype, convthreshold, alph, ERCfactor,robustflaglmd)
 
 % description - 
   % performs state estimation for entire ntimesteps for the specified problem given a model of the 
@@ -77,7 +77,7 @@ function [xs, Ps, posterior, xmodslong, pmodslong, posteriorslong] = ekf1Multi(p
                         if converged == 0
                             Ls(md) = computeLikelihoodMulti(H, x, P, del*R, ys(:,i)); %Ls(md) = computeLikelihoodMBRM(H, x, P_est, del*R, ys(:,i));
                         end
-                        [x, P, resid, K] = ekf3MeasurUpdate(x,P,R*del,ys(:,i),H);
+                        [x, P, resid, K] = ekf3MeasurUpdate(x,P,R*del,ys(:,i),H,robustflaglmd);
                         warning('off','MATLAB:singularMatrix')
                         Htransform = (H'*H)\H';
                         Htransform(isnan(Htransform)) = 0;
@@ -85,7 +85,11 @@ function [xs, Ps, posterior, xmodslong, pmodslong, posteriorslong] = ekf1Multi(p
                         er = (Htransform - K)*resid; %%not sure if this works for other cases
                     end
                 else
-                    [x, P, ~, ~] = ekf3MeasurUpdate(x,P,R*del,ys(:,i),H);
+                    if converged == 0
+                        Ls(md) = computeLikelihoodMulti(H, x, P, del*R, ys(:,i)); %Ls(md) = computeLikelihoodMBRM(H, x, P_est, del*R, ys(:,i));
+                    end
+                    
+                    [x, P, ~, ~] = ekf3MeasurUpdate(x,P,R*del,ys(:,i),H,robustflaglmd);
                 end
                 
                 %[x, P] = ekf3MeasurUpdate(x,P,del*R,ys(:,i),H);

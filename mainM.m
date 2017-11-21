@@ -32,7 +32,7 @@ x0_real = [10
     1];
 
 %%begin added%%%
-ERC = true;
+ERC = false;
 if ERC
     ERCfactor = 5; % time delay for concentration is del*factor
     factorInd = [1 2]'; %factorInd includes the state indices of the measurement vector that are slow:
@@ -40,6 +40,7 @@ else
     ERCfactor = 0;
     factorInd = NaN;
 end
+robustflaglmd = true;
 
 % simulate the MBR.
 [simulStates, simulMeasur] = simulMBR(Q_real,R_real,x0_real,ntimesteps,del,ERCfactor,factorInd);

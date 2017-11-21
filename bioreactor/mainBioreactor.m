@@ -40,7 +40,7 @@ end
 
 % returns a vector of states against time (n by ntimesteps) as the
 % first argument.
-[estStatesEKF, EKFP] = ekf1Single(x0_est,P0,H,Q_est,R_est,simulMeasur,ntimesteps,del,'Bioreactor',md,alph,ERCfactor);
+[estStatesEKF, EKFP] = ekf1Single(x0_est,P0,H,Q_est,R_est,simulMeasur,ntimesteps,del,'Bioreactor',md,alph,ERCfactor,robustflaglmd);
 toc
 
 rsmeEKF = computeRSME_Single(estStatesEKF,simulStates);

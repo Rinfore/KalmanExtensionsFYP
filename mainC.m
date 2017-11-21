@@ -35,6 +35,7 @@ x0_real = [304
 
 ERCfactor = false;
 alph = NaN;
+robustflaglmd = false;
 % simulate the CSTR.
 [simulStates, simulMeasur] = simulCSTR(Q_real,R_real,x0_real,ntimesteps,del);
 toc

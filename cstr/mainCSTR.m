@@ -12,7 +12,7 @@ x0_est = [304
 
 % returns a vector of states against time (n by ntimesteps) as the
 % first argument.
-[estStatesEKF, EKFP] = ekf1Single(x0_est,P0,H,Q_est,R_est,simulMeasur,ntimesteps,del,'CSTR',NaN,alph,ERCfactor);
+[estStatesEKF, EKFP] = ekf1Single(x0_est,P0,H,Q_est,R_est,simulMeasur,ntimesteps,del,'CSTR',NaN,alph,ERCfactor,robustflaglmd);
 toc
 
 rsmeEKF = computeRSME_CSTR(estStatesEKF,simulStates);

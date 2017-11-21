@@ -1,4 +1,4 @@
-function [xnewM, PnewM, resid, K]=ekf3MeasurUpdate(xnew,Pnew,R,y,H)
+function [xnewM, PnewM, resid, K]=ekf3MeasurUpdate(xnew,Pnew,R,y,H,robustflaglmd)
     
 % description - 
   % does a single measurement update from at time k for the MBR problem 
@@ -13,6 +13,9 @@ function [xnewM, PnewM, resid, K]=ekf3MeasurUpdate(xnew,Pnew,R,y,H)
   % @param R: j x j matrix: measurement noise covariance matrix
   
   % @param y: n x 1 vector: measurement
+  % @param H: j x n matrix: output matrix
+  % @param robustflag: binary: 1 if robust measurement update is to be
+  % used, 0 otherwise.
   
 % output
   % @return xnewM: n x 1 vector: a posteriori state estimate
@@ -23,12 +26,23 @@ function [xnewM, PnewM, resid, K]=ekf3MeasurUpdate(xnew,Pnew,R,y,H)
   x = xnew;
   P = Pnew;
   n = size(x,1);
+  j = size(y,1);
       
   resid = y - H*x;
   if ~((sum(sum(isnan(P)))+sum(sum(isinf(P)))) > 0) %ensures no nan and inf in the matrix.
       K = (P*H')/(H*P*H'+R);
       x = x + K*resid;
-      P = (eye(n)-K*H)*P*(eye(n)-K*H)'+K*R*K'; % Joseph stabilized version (guarantees positive semidefiniteness)
+      if robustflaglmd
+          lmd = robustflaglmd;
+          gamm = lmd*eigs(inv(inv(P)+H'*(R\H)),1); %%eigs(A,1) returns largest eigenvalue of matrix A
+          Re = [R+H*P*H' (P*H')'
+              P*H' -gamm^2*eye(n)+P];
+          P = (eye(n)-P*[H' eye(n)]*(Re\([H' eye(n)]')))*P;
+      else
+          P = (eye(n)-K*H)*P*(eye(n)-K*H)'+K*R*K'; % Joseph stabilized version (guarantees positive semidefiniteness)
+      end
+  else
+      disp(P);
   end
   %regularization!!!
   %P = (1-1e-4)*P + 1e-4*eye(size(P));%!!!!

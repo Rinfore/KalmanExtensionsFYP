@@ -59,6 +59,8 @@ end
 
 ERCfactor = false;
 alph = NaN;
+%robustflaglmd = false;
+robustflaglmd = 2;
 % simulate the Bioreactor.
 [simulStates, simulMeasur] = simulBioreactor(Q_real,R_real,x0_real,ntimesteps,del,md);
 toc
