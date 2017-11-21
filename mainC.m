@@ -33,11 +33,13 @@ x0_real = [304
 %    303
 %    2.26];
 
+ERCfactor = false;
+alph = NaN;
 % simulate the CSTR.
 [simulStates, simulMeasur] = simulCSTR(Q_real,R_real,x0_real,ntimesteps,del);
 toc
 
 % one is usually commented out. The uncommented one is run and evaluated.
 
-%mainCSTR %this is for single-model EKF
-mainCSTRM %this is for multiple-model EKF
+mainCSTR %this is for single-model EKF
+%mainCSTRM %this is for multiple-model EKF

@@ -1,4 +1,4 @@
-function [xnewM, PnewM, resid, K]=ekf3MeasurUpdate(xnew,Pnew,R,y,H)
+function [x, ernewM]=ekf4CompensMBR(x,ernew,alph,del,time,H)
     
 % description - 
   % does a single measurement update from at time k for the MBR problem 
@@ -17,23 +17,21 @@ function [xnewM, PnewM, resid, K]=ekf3MeasurUpdate(xnew,Pnew,R,y,H)
 % output
   % @return xnewM: n x 1 vector: a posteriori state estimate
   % @return PnewM: n x n matrix: a posteriori covariance matrix estimate
-  % @return resid: j x 1 vector: residual for iteration
-  % @return K: n x j matrix: Kalman gain for iteration
   
-  x = xnew;
-  P = Pnew;
-  n = size(x,1);
+  er = ernew;
+
+  %n = size(x,1);
+  %j = size(y,1);
+  
+  %H = [eye(4), zeros(4,2)];
       
-  resid = y - H*x;
-  if ~((sum(sum(isnan(P)))+sum(sum(isinf(P)))) > 0) %ensures no nan and inf in the matrix.
-      K = (P*H')/(H*P*H'+R);
-      x = x + K*resid;
-      P = (eye(n)-K*H)*P*(eye(n)-K*H)'+K*R*K'; % Joseph stabilized version (guarantees positive semidefiniteness)
-  end
-  %regularization!!!
-  %P = (1-1e-4)*P + 1e-4*eye(size(P));%!!!!
+  loadParamDataMBR
   
-  xnewM = x;
-  PnewM = P;
+  % numerical integration for one sampling period
+  solx = ode45(@(t,x) MBRsimulfun(t,er,alphat(time)),[0,del],er);
+  er = deval(solx,del);
+  
+  ernewM = er;
+  x = x + alph*H*ernewM;
   
 end

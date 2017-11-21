@@ -49,7 +49,7 @@ function [xnew, Pnew] = ekf2TimeUpdateSingle(xold,Pold,Q,del,time,probtype,md)
         x = deval(solx,del);
 
         P_col = P(:);
-        solP = ode45(@(t,P) CSTRsimulCovfun(t,P,f3_estimate,Q,solx),[0,del],P_col); %n_estimate=xold(6)
+        solP = ode45(@(t,P) CSTRsimulCovfun(t,P,Q,f3_estimate,solx),[0,del],P_col); %n_estimate=xold(6)
         P = reshape(deval(solP,del),n,n);
       case 'Bioreactor'
         % numerical integration for one sampling period

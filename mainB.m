@@ -57,6 +57,8 @@ switch md
         warning('unexpected index of model')
 end
 
+ERCfactor = false;
+alph = NaN;
 % simulate the Bioreactor.
 [simulStates, simulMeasur] = simulBioreactor(Q_real,R_real,x0_real,ntimesteps,del,md);
 toc

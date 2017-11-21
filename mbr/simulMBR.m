@@ -1,4 +1,4 @@
-function [simulStates, simulMeasur] = simulMBR(Q,R,x0,ntimesteps,del)
+function [simulStates, simulMeasur] = simulMBR(Q,R,x0,ntimesteps,del,ERCfactor,factorInd)
 
 % description
   % simulates an MBR for ntimesteps given noise covariance matrices Q and R
@@ -63,6 +63,15 @@ function [simulStates, simulMeasur] = simulMBR(Q,R,x0,ntimesteps,del)
         v = mvnrnd(zeros(j,1),R_discrL);
         y = H*x + v';
         y(1:3) = max(y(1:3),0);
+        
+        %%begin added%%
+        % special code for ERC
+        if ERCfactor %%if ERCfactor is 0, runs with regular sampling
+            if mod(i-1,ERCfactor) ~= 0 %%so first data point has a reading
+                y(factorInd) = NaN;
+            end
+        end
+        %%end added%%
 
         simulStates(:,i) = x;
         simulMeasur(:,i) = y;
