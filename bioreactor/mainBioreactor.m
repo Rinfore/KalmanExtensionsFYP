@@ -1,8 +1,11 @@
 tic
 % initialization
-P0 = diag([0.001 0.001 0 0 0 0]);
-R_est = diag([1e-4 1e-4]);
-Q_est = diag([0.001 0.001 0 0 0 0]);
+%P0 = diag([0.1 0.1 0 0 0 0]);
+% R_est = diag([1e-1 1e-1]);
+% Q_est = diag([0.01 0.01 0 0 0 0]); 
+P0 = diag([0.001 0.001 1e-6 1e-6 1e-6 1e-6]); 
+R_est = diag([1e-1 1e-1]);
+Q_est = diag([0.01 0.01 0 0 0 0]); 
 H = [eye(2), zeros(2,4)];
 
 x0_est = [1 %x1
@@ -12,7 +15,7 @@ x0_est = [1 %x1
     0
     0];
 
-%md = 4; %%only for manual override
+md = 2; %%only for manual override
 switch md
     case 1
         x0_est(3:6,:) = [0.3
@@ -43,5 +46,8 @@ end
 [estStatesEKF, EKFP] = ekf1Single(x0_est,P0,H,Q_est,R_est,simulMeasur,ntimesteps,del,'Bioreactor',md,alph,ERCfactor,robustflaglmd);
 toc
 
-rsmeEKF = computeRSME_Single(estStatesEKF,simulStates);
+rsmeEKF = computeRSME_Bioreactor(estStatesEKF,simulStates);
+
+NCI = computeNCI(estStatesEKF(1:2,:),EKFP(1:2,1:2,:),simulStates(1:2,:));
+
 toc

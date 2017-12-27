@@ -1,6 +1,7 @@
 # Images
 *.png
 *.fig
+*.mat
 
 # Matlab-specific
 *.mat

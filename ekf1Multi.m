@@ -1,4 +1,4 @@
-function [xs, Ps, posterior, xmodslong, pmodslong, posteriorslong] = ekf1Multi(prior,x0,P0,H,Q,R,ys,ntimesteps,del, probtype, convthreshold, alph, ERCfactor,robustflaglmd)
+function [xs, Ps, posterior, xmodslong, pmodslong, posteriorslong] = ekf1Multi(prior,x0,P0,H,Q,R,ys,ntimesteps,del, probtype, convthreshold, alph, ERCfactor,robustflaglmd, ERCflag)
 
 % description - 
   % performs state estimation for entire ntimesteps for the specified problem given a model of the 
@@ -23,19 +23,31 @@ function [xs, Ps, posterior, xmodslong, pmodslong, posteriorslong] = ekf1Multi(p
   % @param del: scalar: delay between measurement readings.
   
   % @param probtype: string: supports MBR, CSTR, and Bioreactor problem
+  % @param ERCflag: binary: 1 if Estimated Residual Compensation is to be
+  % employed, 0 otherwise.
+  
+  % @param robustflag: binary: 1 if robust measurement update is to be
+  % used, 0 otherwise.
   
 % output
-  % @return xs: n x ntimesteps matrix:  matrix containing diagonal of the a
+  % @return xs: n x ntimesteps matrix:  matrix containing a
   % posteriori state estimates, with each column i corresponding to the estimate at time i.
-  % @return Ps: n x ntimesteps 3-D matrix: matrix containing diagonal of the a posteriori covariance matrix
+  % @return Ps: n x n x ntimesteps 3-D matrix: matrix containing a posteriori covariance matrix
   % estimates, with each column i corresponding to the estimate at time i.
-  
+  % @return posterior: m x 1 vector: vector containing final posterior
+  % state estimates
+  % @return xmodslong: n x m x ntimesteps matrix:  matrix containing a posteriori state estimates, with the second index md corresponding to the estimate for model md, with the third index i corresponding to the estimate at time i.
+  % @return pmodslong: n x m x ntimesteps matrix:  matrix containing the diagonal of the a posteriori covariance matrix, with the second index md corresponding to the estimate for model md, with the third index i corresponding to the estimate at time i.
+  % @return posteriorslong: m x ntimesteps matrix: matrix containing posterior
+  % state estimates, with each column i corresponding to the posterior 
+  % distribution at time i.
 
   n = size(x0,1);
   m = size(prior,1); %!!!
   
   xs = zeros(n,ntimesteps);
-  Ps = zeros(n,ntimesteps);
+  %Ps = zeros(n,ntimesteps);
+  Ps = zeros(n,n,ntimesteps);
   
   ignoredIndices = zeros(4,1);
   
@@ -55,6 +67,10 @@ function [xs, Ps, posterior, xmodslong, pmodslong, posteriorslong] = ekf1Multi(p
       ermods = zeros(n,m);
   end
   
+  %%%
+  useP_est = false; %%should always be false
+  %%%
+  
   for i = 1:ntimesteps
       
       P_est = reshape(reshape(permute(Pmods,[3 1 2]),m,[]).'*prior,n,[]); % just averaging P's for various models by the probabilities contained in prior
@@ -71,11 +87,17 @@ function [xs, Ps, posterior, xmodslong, pmodslong, posteriorslong] = ekf1Multi(p
                 
                 if ERCfactor
                     if mod(i-1,ERCfactor) ~= 0 %%so first data point has a reading
-                        [x, er] = ekf4CompensMBRM(x,er,alph,del,time,H,md);%%F? resid?
+                        if ERCflag
+                            [x, er] = ekf4CompensMBRM(x,er,alph,del,time,H,md);%%F? resid?
+                        end
                         Ls(md) = 1; %% arbitrary value that is equal for all models
                     else
                         if converged == 0
-                            Ls(md) = computeLikelihoodMulti(H, x, P, del*R, ys(:,i)); %Ls(md) = computeLikelihoodMBRM(H, x, P_est, del*R, ys(:,i));
+                            if ~useP_est
+                                Ls(md) = computeLikelihoodMulti(H, x, P, del*R, ys(:,i));
+                            else
+                                Ls(md) = computeLikelihoodMulti(H, x, P_est, del*R, ys(:,i));
+                            end
                         end
                         [x, P, resid, K] = ekf3MeasurUpdate(x,P,R*del,ys(:,i),H,robustflaglmd);
                         warning('off','MATLAB:singularMatrix')
@@ -86,7 +108,11 @@ function [xs, Ps, posterior, xmodslong, pmodslong, posteriorslong] = ekf1Multi(p
                     end
                 else
                     if converged == 0
-                        Ls(md) = computeLikelihoodMulti(H, x, P, del*R, ys(:,i)); %Ls(md) = computeLikelihoodMBRM(H, x, P_est, del*R, ys(:,i));
+                        if ~useP_est
+                                Ls(md) = computeLikelihoodMulti(H, x, P, del*R, ys(:,i));
+                            else
+                                Ls(md) = computeLikelihoodMulti(H, x, P_est, del*R, ys(:,i));
+                        end
                     end
                     
                     [x, P, ~, ~] = ekf3MeasurUpdate(x,P,R*del,ys(:,i),H,robustflaglmd);
@@ -140,7 +166,8 @@ function [xs, Ps, posterior, xmodslong, pmodslong, posteriorslong] = ekf1Multi(p
           P_est = reshape(reshape(permute(Pmods,[3 1 2]),m,[]).'*posterior,n,[]); %%analogous to x_est's calculation.
 
           xs(:,i) = x_est;
-          Ps(:,i) = diag(P_est);
+          %Ps(:,i) = diag(P_est);
+          Ps(:,:,i) = P_est;
           posteriorslong(:,i) = posterior;
        
           continue
@@ -161,7 +188,8 @@ function [xs, Ps, posterior, xmodslong, pmodslong, posteriorslong] = ekf1Multi(p
       P_est = reshape(reshape(permute(Pmods,[3 1 2]),m,[]).'*posterior,n,[]); %%analogous to x_est's calculation.
 
       xs(:,i) = x_est;
-      Ps(:,i) = diag(P_est);
+      %Ps(:,i) = diag(P_est);
+      Ps(:,:,i) = P_est;
       posteriorslong(:,i) = posterior;
 
      if converged == 0

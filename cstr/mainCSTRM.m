@@ -18,10 +18,12 @@ prior = ones(m,1)/m; %complete uncertainty
 % returns a vector of states against time (n by ntimesteps) as the
 % first argument. Also returns time series of diagonal of
 % covariance matrix, posteriors, states estimated by each model, etc.
-[estStatesEKF, EKFP, EKFposterior, estStatesEKFmodels, EKFPmodels, EKFposteriorTimeSeries] = ekf1Multi(prior,x0_est,P0,H_mult,Q_est,R_est,simulMeasur,ntimesteps,del,'CSTR',1,alph,ERCfactor,robustflaglmd);
+[estStatesEKF, EKFP, EKFposterior, estStatesEKFmodels, EKFPmodels, EKFposteriorTimeSeries] = ekf1Multi(prior,x0_est,P0,H_mult,Q_est,R_est,simulMeasur,ntimesteps,del,'CSTR',1,alph,ERCfactor,robustflaglmd,ERCflag);
 toc
 
 rsmeEKF = computeRSME_CSTR(estStatesEKF,simulStates); %% last row corresponds to n and is irrelevant in this case.
 %rsmeEKF = computeRSMEMulti(estStatesEKF,simulStates(1:end-1,:),estStatesEKFmodels);
+
+NCI = computeNCI(estStatesEKF,EKFP,simulStates);
 
 toc

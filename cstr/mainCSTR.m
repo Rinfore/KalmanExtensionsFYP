@@ -16,4 +16,7 @@ x0_est = [304
 toc
 
 rsmeEKF = computeRSME_CSTR(estStatesEKF,simulStates);
+
+NCI = computeNCI(estStatesEKF,EKFP,simulStates);
+
 toc

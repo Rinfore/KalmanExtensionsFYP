@@ -1,25 +1,27 @@
 function [xnew, Pnew] = ekf2TimeUpdateMulti(md,xold,Pold,Q,del,time,probtype)
     
 % description - 
-  % does a single time update from time k-1 to time k for the MBR problem 
-  % given a model of the system (in the form of a vector/matrix xold, Pold, Q) to 
-  % obtain a priori estimates of P and x (P_{k}^- and x_{k}^-) before 
-  % measurement information is incorporated. md is provided to ensure time
-  % is updated according to the dynamics.
+  % does a single time update from time k-1 to time k for either the MBR, 
+  % CSTR or bioreactor problem given a model of the system (in the form of
+  % a vector/matrix xold, Pold, Q) to obtain a priori estimates of P and x
+  % (P_{k}^- and x_{k}^-) before measurement information is incorporated. 
+  % md is an index that allows for the filter to be updated according to
+  % the correct model dynamics.
 
 % input
-  % @param md: scalar: index of the model being used, n = 0, 1, 1.5 and 2
+  % @param md: scalar: index of the model being used, 1, 2, 3, and 4 
+  % corresponding to n = 0, 1, 1.5 and 2 respectively for MBR problem, 
+  % n = 1 or 2 for CSTR problem, n = 1, 2, 3, 4 for bioreactor problem.
   % @param xold: n x 1 vector: state vector
   % @param Pold: n x n matrix: covariance matrix
   
   % @param Q: n x n matrix: process noise covariance matrix
-  % @param R: j x j matrix: measurement noise covariance matrix
   
   % @param del: scalar: delay between measurement readings.
   % @param time: scalar: time in seconds of time k, used in determining the
-  % control action through array alphat in loadParamDataMBR
-  % @param md: scalar: mainly for Bioreactor problem - index of model being
-  % used
+  % control action through array alphat in loadParamDataMBR for MBR problem
+  
+  % @param probtype: string: supports 'MBR', 'CSTR', and 'Bioreactor' problem
 
 % output
   % @return xnew: n x 1 vector: a priori state estimate

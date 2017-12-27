@@ -1,9 +1,10 @@
 function [xnewM, PnewM, resid, K]=ekf3MeasurUpdate(xnew,Pnew,R,y,H,robustflaglmd)
     
 % description - 
-  % does a single measurement update from at time k for the MBR problem 
-  % given a model of the system (in the form of a matrix/matrices F, H, 
-  % Pnew,xnew,R, y at time k) to obtain a posteriori estimates of P and x 
+  % does a single measurement update from at time k for a generic problem 
+  % (MBR or otherwise) given a model of the system (in the form of a  
+  % vector/matrix H) and other supporting information (xnew, Pnew, y at 
+  % time k, robustflaglmd) to obtain a posteriori estimates of P and x 
   % (P_{k}^+ and x_{k}^+) after measurement information is incorporated.
   
 % input

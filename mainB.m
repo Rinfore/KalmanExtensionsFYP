@@ -22,8 +22,15 @@ ntimesteps = floor(dur/del);
 
 % initialize R_real, Q_real, x0_real for MBR simulation
 % later
-R_real = diag([1e-4 1e-4]);
-Q_real = diag([0.001 0.001 0 0 0 0]);
+
+% this is the correct R and Q
+%R_real = diag([1e-1 1e-1]);
+%Q_real = diag([0.01 0.01 0 0 0 0]);
+
+% this is robustness check
+R_real = diag([1 1]);
+Q_real = diag([1e-2 1e-2 0 0 0 0]);
+
 x0_real = [1 %x1
     0.01 %x2
     0
@@ -57,10 +64,11 @@ switch md
         warning('unexpected index of model')
 end
 
+ERCflag = false;
 ERCfactor = false;
 alph = NaN;
-%robustflaglmd = false;
-robustflaglmd = 2;
+robustflaglmd = false;
+%robustflaglmd = 2;
 % simulate the Bioreactor.
 [simulStates, simulMeasur] = simulBioreactor(Q_real,R_real,x0_real,ntimesteps,del,md);
 toc

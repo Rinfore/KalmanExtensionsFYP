@@ -1,4 +1,4 @@
-function [simulStates, simulMeasur] = simulMBR(Q,R,x0,ntimesteps,del,ERCfactor,factorInd)
+function [simulStates, simulMeasur] = simulMBR(Q,R,x0,ntimesteps,del,ERCfactor,factorInd,EulerMaru)
 
 % description
   % simulates an MBR for ntimesteps given noise covariance matrices Q and R
@@ -13,6 +13,7 @@ function [simulStates, simulMeasur] = simulMBR(Q,R,x0,ntimesteps,del,ERCfactor,f
   % @param ntimesteps: scalar: number of time steps to simulate,
   % non-inclusive of initial state.
   % @param del: scalar: delay between measurement readings.
+  % @param EulerMaru: binary: 1 if euler-maruyama is to be used
   
 % output
   % @return simulStates: n x ntimesteps matrix: simulated matrix of real states, with each
@@ -41,25 +42,30 @@ function [simulStates, simulMeasur] = simulMBR(Q,R,x0,ntimesteps,del,ERCfactor,f
 
         time = ceil(i*del);%%used later to index into the correct control action in the alpha vector
         %%%%Q_discrLpts = Q_discrL/pts;
-         for k = 1:pts
+        if EulerMaru
+             for k = 1:pts
+                 w = mvnrnd(zeros(n,1),Q_discrL);
+
+
+                 dx = [x(1)^2*Area*x(3)/(c_10*V0)*(1-alphat(time)) %%changed!
+                       -x(1)*x(2)*Area*x(3)/(c_10*V0)*(alphat(time))
+                       -x(5)*Area^(2-x(6))*x(3)^(3-x(6))
+                       -x(5)*Area^(2-x(6))*(3-x(6))*x(3)^(2-x(6))*x(4)
+                       0
+                       0];
+
+                 x = x + dx*ddel+ w'*sqrt(ddel);
+
+                 x(1:3) = max(x(1:3),0);
+
+             end
+        else
+             sol = ode45(@(t,x) MBRsimulfun(t,x,alphat(time)),[0,del],x);
+             x = deval(sol,del);
+
              w = mvnrnd(zeros(n,1),Q_discrL);
-         
-             dx = [x(1)^2*Area*x(3)/(c_10*V0)*(1-alphat(time)) %%changed!
-                   -x(1)*x(2)*Area*x(3)/(c_10*V0)*(alphat(time))
-                   -x(5)*Area^(2-x(6))*x(3)^(3-x(6))
-                   -x(5)*Area^(2-x(6))*(3-x(6))*x(3)^(2-x(6))*x(4)
-                   0
-                   0];
-         
-             x = x + dx*ddel+ w'*sqrt(ddel); %%real?????
-             x(1:3) = max(x(1:3),0);
-         end
-        
-%         sol = ode45(@(t,x) MBRsimulfun(t,x,alphat(time)),[0,del],x);
-%         x = deval(sol,del);
- 
-%         w = mvnrnd(zeros(n,1),Q_discrL);
-%         x = x + w';
+             x = x + w';
+        end
         v = mvnrnd(zeros(j,1),R_discrL);
         y = H*x + v';
         y(1:3) = max(y(1:3),0);

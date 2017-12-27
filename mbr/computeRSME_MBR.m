@@ -20,7 +20,7 @@ for i = 1:n
             axis([0 ntimesteps 0 40])
             title('c1 (mol/m^3)')  
         case 2
-            axis([0 ntimesteps -0.3 100 ])
+            axis([0 ntimesteps -0.3 100 ]) %100 or 420
             title('c2 (mol/m^3)')  
         case 3
             axis([0 ntimesteps 0 0.1])

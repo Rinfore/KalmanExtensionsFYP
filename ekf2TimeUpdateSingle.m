@@ -1,18 +1,17 @@
 function [xnew, Pnew] = ekf2TimeUpdateSingle(xold,Pold,Q,del,time,probtype,md)
     
 % description - 
-  % does a single time update from time k-1 to time k for the MBR problem 
-  % given a model of the system (in the form of a vector/matrix xold, Pold, Q) to 
-  % obtain a priori estimates of P and x (P_{k}^- and x_{k}^-) before 
-  % measurement information is incorporated.
+  % does a single time update from time k-1 to time k for either the MBR, 
+  % CSTR or bioreactor problem given a model of the system (in the form of
+  % a vector/matrix xold, Pold, Q) to obtain a priori estimates of P and x
+  % (P_{k}^- and x_{k}^-) before measurement information is incorporated.
 
 % input
   % @param xold: n x 1 vector: state vector
   % @param Pold: n x n matrix: covariance matrix
   
   % @param Q: n x n matrix: process noise covariance matrix
-  % @param R: j x j matrix: measurement noise covariance matrix
-  
+
   % @param del: scalar: delay between measurement readings.
   % @param time: scalar: time in seconds of time k, used in determining the
   % control action through array alphat in loadParamDataMBR

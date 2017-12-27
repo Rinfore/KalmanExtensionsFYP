@@ -23,6 +23,9 @@ function [xs, Ps] = ekf1Single(x0,P0,H,Q,R,ys,ntimesteps,del,probtype,md,alph,ER
   % @param ERCfactor: scalar: 0 if ERC is not to be used, or the ratio of fast
   % to slow readings
   
+  % @param robustflag: binary: 1 if robust measurement update is to be
+  % used, 0 otherwise.
+  
 % output
   % @return xs: n x ntimesteps matrix:  matrix containing diagonal of the a
   % posteriori state estimates, with each column i corresponding to the estimate at time i.
@@ -32,7 +35,8 @@ function [xs, Ps] = ekf1Single(x0,P0,H,Q,R,ys,ntimesteps,del,probtype,md,alph,ER
   n = size(x0,1);
   
   xs = zeros(n,ntimesteps);
-  Ps = zeros(n,ntimesteps);
+  %Ps = zeros(n,ntimesteps);
+  Ps = zeros(n,n,ntimesteps);
   
   x = x0;
   P = P0;
@@ -60,7 +64,8 @@ function [xs, Ps] = ekf1Single(x0,P0,H,Q,R,ys,ntimesteps,del,probtype,md,alph,ER
     %x = real(x);
     %P = real(P);
     xs(:,i) = x;
-    Ps(:,i) = diag(P);
+    Ps(:,:,i) = P;
+    %Ps(:,i) = diag(P);
     %Ks(:,i) = K;
     
   end

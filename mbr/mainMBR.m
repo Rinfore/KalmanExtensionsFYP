@@ -10,9 +10,24 @@ alph = [diag([5e-5 5e-5 5e-5 5e-5])
 x0_est = [10
     200
     0.06
-    -0.0072
+    0 %to be modified later
     2
     1];
+x0_est(6) = x0_real(6);
+%x0_est(6) = 1;
+
+switch x0_real(6)
+    case 0
+        x0_est(4) = -4.3200e-04;%n=0
+    case 1
+        x0_est(4) = -0.0072;%n=0
+    case 1.5
+        x0_est(4) = -0.0294;%n=0
+    case 2.0
+        x0_est(4) = -0.1200;%n=0
+    otherwise
+        warning('unidentified MBR model')
+end
 
 % returns a vector of states against time (n by ntimesteps) as the
 % first argument.
@@ -20,4 +35,7 @@ x0_est = [10
 toc
 
 rsmeEKF = computeRSME_MBR(estStatesEKF,simulStates);
+
+NCI = computeNCI(estStatesEKF,EKFP,simulStates);
+
 toc

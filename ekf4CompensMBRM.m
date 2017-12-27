@@ -1,22 +1,27 @@
 function [x, ernewM]=ekf4CompensMBRM(x,ernew,alph,del,time,H,md)
     
 % description - 
-  % does a single measurement update from at time k for the MBR problem 
-  % given a model of the system (in the form of a matrix/matrices F, H, 
-  % Pnew,xnew,R, y at time k) to obtain a posteriori estimates of P and x 
-  % (P_{k}^+ and x_{k}^+) after measurement information is incorporated.
+   % performs estimated residual compensation at time k for the MBR problem 
   
 % input
   
   % @param xnew: n x 1 matrix: state vector
-  % @param Pnew: n x n matrix: covariance matrix
-  % @param R: j x j matrix: measurement noise covariance matrix
+  % @param ernew: j x 1 vector: residual
+  % @param alph: n x j matrix: alpha matrix (tuning parameter for ERC)
   
-  % @param y: n x 1 vector: measurement
+  % @param del: scalar: delay between measurement readings.
+  % @param time: scalar: time in seconds of time k, used in determining the
+  % control action through array alphat in loadParamDataMBR for MBR problem
+  
+  % @param H: j x n matrix: output matrix
+  
+  % @param md: scalar: index of the model being used, 1, 2, 3, and 4 
+  % corresponding to n = 0, 1, 1.5 and 2 respectively for MBR problem, 
+  % n = 1 or 2 for CSTR problem, n = 1, 2, 3, 4 for bioreactor problem.
   
 % output
   % @return xnewM: n x 1 vector: a posteriori state estimate
-  % @return PnewM: n x n matrix: a posteriori covariance matrix estimate
+  % @return ernewM: n x n matrix: a posteriori residual
   
   er = ernew;
 
